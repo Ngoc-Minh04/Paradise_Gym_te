@@ -236,8 +236,6 @@
       const schedules = window.GymApp.data.ptSchedules || [];
       const today = new Date().toLocaleDateString('sv', { timeZone: 'Asia/Ho_Chi_Minh' }).split(' ')[0];
       const todaySchedules = schedules.filter(s => s.ngay_tap === today);
-      const monthStart = today.slice(0, 7);
-      const doneThisMonth = schedules.filter(s => s.trang_thai === 'da_tap' && s.ngay_tap?.startsWith(monthStart)).length;
 
       // Unique học viên từ lịch tập
       const studentMap = {};
@@ -291,11 +289,11 @@
                 </div>
                 <div class="p-loose">
                   ${todaySchedules.length === 0
-              ? `<div class="py-margin text-center text-on-surface-variant">
+                    ? `<div class="py-margin text-center text-on-surface-variant">
                          <span class="material-symbols-outlined text-4xl text-outline block mb-standard">event_available</span>
                          <p class="font-bold">Không có lịch tập hôm nay</p>
                        </div>`
-              : `<div class="flex flex-col gap-standard">
+                    : `<div class="flex flex-col gap-standard">
                         ${todaySchedules.map(s => `
                           <div class="flex items-center gap-compact p-standard rounded-xl bg-surface-container border border-outline-variant">
                             ${window.GymApp.avatarImg(s.avatar_hoi_vien, s.ten_hoi_vien, 'sm')}
@@ -307,7 +305,7 @@
                           </div>
                         `).join('')}
                        </div>`
-            }
+                  }
                 </div>
               </div>
 
@@ -322,11 +320,11 @@
                 </div>
                 <div class="p-loose grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-loose">
                   ${students.length === 0
-              ? `<div class="col-span-3 py-margin text-center text-on-surface-variant">
+                    ? `<div class="col-span-3 py-margin text-center text-on-surface-variant">
                          <span class="material-symbols-outlined text-4xl text-outline block mb-standard">person_off</span>
                          Chưa có học viên
                        </div>`
-              : students.map(sv => `
+                    : students.map(sv => `
                         <div class="gym-card bg-surface-container-lowest rounded-2xl border border-outline-variant p-loose shadow-sm flex flex-col items-center gap-standard">
                           ${window.GymApp.avatarImg(sv.avatar, sv.ten, 'lg')}
                           <div class="text-center">
@@ -335,7 +333,7 @@
                           </div>
                         </div>
                       `).join('')
-            }
+                  }
                 </div>
               </div>
             </div>
@@ -379,7 +377,6 @@
         }
 
         const { token, het_han_sau_phut } = res.data;
-        this._TTL_PHUT = het_han_sau_phut || 5;
         const wrapper = document.getElementById('qr-wrapper');
         if (!wrapper) return;
         wrapper.innerHTML = '';
@@ -448,7 +445,7 @@
         <div class="flex flex-col gap-loose">
           <div class="page-title-bar">
             <h2 class="font-display-lg text-display-lg text-on-surface font-bold">Lịch tập của tôi</h2>
-            <p class="text-on-surface-variant font-body-sm text-body-sm mt-xs">Toàn bộ lịch tập được phân công cho bạn</p>
+            <p class="text-on-surface-variant font-body-sm text-body-sm mt-xs">Quản lý lộ trình tập luyện và dinh dưỡng cho học viên</p>
           </div>
 
           <!-- Filter -->
@@ -472,69 +469,126 @@
             </div>
           </div>
 
-          <!-- Table -->
-          <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
-            <div id="schedule-table-wrap">
-              ${this._renderTable(schedules)}
+          <!-- Cards Container -->
+          <div id="schedule-cards-wrap" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-loose">
+            ${this._renderCards(schedules)}
+          </div>
+        </div>
+
+        <!-- Modal Sửa ghi chú/lịch -->
+        <div id="modal-edit-note" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-xl w-full max-w-md mx-loose p-loose flex flex-col gap-margin">
+            <div class="flex items-center justify-between">
+              <h3 class="font-display-2xl text-display-2xl font-bold text-on-surface">Cập nhật buổi tập</h3>
+              <button id="close-edit-note" class="material-symbols-outlined text-on-surface-variant hover:text-error transition-colors">close</button>
+            </div>
+            
+            <input type="hidden" id="edit-sch-id" />
+            
+            <div class="flex flex-col gap-standard">
+              <div class="p-standard bg-surface-container rounded-xl border border-outline-variant">
+                <p id="edit-sch-info" class="font-bold text-brand-primary text-body-md"></p>
+                <p id="edit-sch-time" class="text-on-surface-variant text-body-sm"></p>
+              </div>
+
+              <div>
+                <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">🏋️ Tập gì hôm nay?</label>
+                <textarea id="edit-sch-note-tap" rows="3" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md resize-none transition-colors" placeholder="VD: Chest Day, 4 sets x 12 reps Squat..."></textarea>
+              </div>
+
+              <div>
+                <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">🍎 Chế độ dinh dưỡng</label>
+                <textarea id="edit-sch-note-eat" rows="3" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md resize-none transition-colors" placeholder="VD: Ăn nhiều ức gà, giảm tinh bột sau 7h tối..."></textarea>
+              </div>
+              
+              <div>
+                <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">Thay đổi thời gian (nếu cần)</label>
+                <div class="grid grid-cols-2 gap-standard">
+                  <input id="edit-sch-start" type="time" class="bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md transition-colors" />
+                  <input id="edit-sch-end" type="time" class="bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md transition-colors" />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-standard justify-end pt-standard border-t border-outline-variant">
+              <button id="cancel-edit-note" class="px-loose py-compact rounded-xl border border-outline-variant text-on-surface-variant hover:bg-surface-container transition-all font-bold text-body-md">Hủy bỏ</button>
+              <button id="save-edit-note" class="px-loose py-compact rounded-xl btn-primary text-white font-bold text-body-md flex items-center gap-xs">
+                <span class="material-symbols-outlined text-sm">save</span>Lưu & Đồng bộ
+              </button>
             </div>
           </div>
         </div>
       `;
     },
 
-    _renderTable(list) {
+    _renderCards(list) {
       if (!list.length) return `
-        <div class="p-margin text-center text-on-surface-variant">
+        <div class="lg:col-span-3 p-margin text-center text-on-surface-variant">
           <span class="material-symbols-outlined text-4xl text-outline block mb-standard">event_busy</span>
           <p class="font-bold">Không tìm thấy lịch tập</p>
         </div>`;
 
-      return `
-        <div class="overflow-x-auto">
-          <table class="gym-table w-full">
-            <thead>
-              <tr>
-                <th>Học viên</th>
-                <th>Ngày tập</th>
-                <th>Giờ</th>
-                <th>Loại buổi</th>
-                <th>Trạng thái</th>
-                <th>Ghi chú</th>
-                <th class="text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${list.map(s => `
-                <tr>
-                  <td>
-                    <div class="flex items-center gap-compact">
-                      ${window.GymApp.avatarImg(s.avatar_hoi_vien, s.ten_hoi_vien, 'sm')}
-                      <span class="font-bold text-on-surface">${s.ten_hoi_vien || '—'}</span>
-                    </div>
-                  </td>
-                  <td class="text-on-surface-variant">${window.GymApp.formatDate(s.ngay_tap)}</td>
-                  <td class="font-bold text-on-surface">${s.gio_bat_dau} — ${s.gio_ket_thuc}</td>
-                  <td><span class="bg-surface-container px-compact py-xs rounded-full text-body-sm text-on-surface-variant font-bold">${s.loai_buoi === 'nhom' ? 'Nhóm' : 'Cá nhân'}</span></td>
-                  <td>${window.GymApp.statusBadge(s.trang_thai)}</td>
-                  <td class="text-on-surface-variant text-body-sm max-w-[160px] truncate">${s.ghi_chu || '—'}</td>
-                  <td class="text-center">
-                    ${s.trang_thai === 'cho_tap'
-          ? `<button
-                            class="btn-confirm-session inline-flex items-center gap-xs px-standard py-xs rounded-xl bg-brand-primary text-white font-bold text-body-sm hover:bg-brand-primary/80 active:scale-95 transition-all shadow-sm whitespace-nowrap"
-                            data-id="${s.id}"
-                            data-name="${s.ten_hoi_vien || 'học viên'}"
-                          >
-                            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1"></span>
-                            Xác nhận đã tập
-                          </button>`
-          : `<span class="text-outline text-body-sm">—</span>`
-        }
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>`;
+      return list.map(s => `
+        <div class="gym-card bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+          <div class="px-loose py-standard border-b border-outline-variant flex items-center justify-between">
+            <span class="text-on-surface-variant text-label-sm font-bold uppercase tracking-wider">Mã #${s.id}</span>
+            ${window.GymApp.statusBadge(s.trang_thai)}
+          </div>
+          
+          <div class="p-loose flex flex-col gap-standard flex-1">
+            <div class="flex items-center gap-compact">
+              ${window.GymApp.avatarImg(s.avatar_hoi_vien, s.ten_hoi_vien, 'sm')}
+              <div>
+                <p class="text-on-surface-variant text-body-sm">Học viên</p>
+                <p class="font-bold text-on-surface text-body-md">${s.ten_hoi_vien || '—'}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-compact">
+              <div class="icon-bg icon-bg-orange" style="width:32px;height:32px;border-radius:8px">
+                <span class="material-symbols-outlined text-[#e65100] text-sm">schedule</span>
+              </div>
+              <div>
+                <p class="text-on-surface-variant text-body-sm">${window.GymApp.formatDate(s.ngay_tap)}</p>
+                <p class="font-bold text-on-surface text-body-md">${s.gio_bat_dau} — ${s.gio_ket_thuc}</p>
+              </div>
+            </div>
+
+            <div class="bg-surface-container rounded-xl p-standard flex flex-col gap-xs">
+              <div class="flex items-start gap-xs">
+                <span class="text-brand-primary font-bold text-body-xs uppercase">🏋️ Tập luyện:</span>
+                <p class="text-on-surface text-body-sm line-clamp-2">${s.ghi_chu_tap || '<span class="text-outline italic">Chưa có ghi chú</span>'}</p>
+              </div>
+              <div class="flex items-start gap-xs border-t border-outline-variant pt-xs mt-atom">
+                <span class="text-[#0284c7] font-bold text-body-xs uppercase">🍎 Dinh dưỡng:</span>
+                <p class="text-on-surface text-body-sm line-clamp-2">${s.ghi_chu_dinh_duong || '<span class="text-outline italic">Chưa có ghi chú</span>'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-loose py-compact border-t border-outline-variant bg-surface-container-low flex items-center justify-end gap-compact">
+            ${s.trang_thai === 'cho_tap' ? `
+              <button class="btn-edit-note inline-flex items-center gap-xs px-standard py-xs rounded-xl border border-brand-primary text-brand-primary font-bold text-body-sm hover:bg-brand-primary hover:text-white transition-all"
+                data-id="${s.id}"
+                data-name="${s.ten_hoi_vien || ''}"
+                data-date="${window.GymApp.formatDate(s.ngay_tap)}"
+                data-start="${s.gio_bat_dau}"
+                data-end="${s.gio_ket_thuc}"
+                data-tap="${(s.ghi_chu_tap || '').replace(/"/g, '&quot;')}"
+                data-eat="${(s.ghi_chu_dinh_duong || '').replace(/"/g, '&quot;')}"
+              >
+                <span class="material-symbols-outlined text-sm">edit_note</span> Ghi chú & Lịch
+              </button>
+              <button class="btn-confirm-session inline-flex items-center gap-xs px-standard py-xs rounded-xl bg-brand-primary text-white font-bold text-body-sm hover:bg-brand-primary/80 transition-all shadow-sm"
+                data-id="${s.id}" data-name="${s.ten_hoi_vien || ''}">
+                <span class="material-symbols-outlined text-sm">check_circle</span> Xác nhận
+              </button>
+            ` : `
+              <span class="text-on-surface-variant text-body-sm italic">Buổi tập đã kết thúc</span>
+            `}
+          </div>
+        </div>
+      `).join('');
     },
 
     _applyFilter() {
@@ -547,7 +601,7 @@
         const matchD = !date || s.ngay_tap === date;
         return matchQ && matchS && matchD;
       });
-      document.getElementById('schedule-table-wrap').innerHTML = this._renderTable(filtered);
+      document.getElementById('schedule-cards-wrap').innerHTML = this._renderCards(filtered);
     },
 
     init() {
@@ -556,51 +610,109 @@
       document.getElementById('sch-status')?.addEventListener('change', () => self._applyFilter());
       document.getElementById('sch-date')?.addEventListener('change', () => self._applyFilter());
       document.getElementById('sch-reload')?.addEventListener('click', async () => {
+        const btn = document.getElementById('sch-reload');
+        btn.disabled = true;
         try {
           const res = await window.GymApp.api.get('/pt/schedules');
           if (res?.success) window.GymApp.data.ptSchedules = res.data || [];
+          window.GymApp.toast('Đã tải lại lịch tập!', 'success');
         } catch (e) { console.error(e); }
-        document.getElementById('sch-search').value = '';
-        document.getElementById('sch-status').value = '';
-        document.getElementById('sch-date').value = '';
+        btn.disabled = false;
         self._applyFilter();
-        window.GymApp.toast('Đã tải lại lịch tập!', 'success');
       });
 
-      // Xác nhận buổi tập — event delegation
-      document.getElementById('schedule-table-wrap')?.addEventListener('click', async (e) => {
+      // Mở modal sửa ghi chú
+      document.getElementById('schedule-cards-wrap')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-edit-note');
+        if (!btn) return;
+        
+        document.getElementById('edit-sch-id').value = btn.dataset.id;
+        document.getElementById('edit-sch-info').textContent = `Học viên: ${btn.dataset.name}`;
+        document.getElementById('edit-sch-time').textContent = `Buổi tập: ${btn.dataset.date} (${btn.dataset.start} - ${btn.dataset.end})`;
+        document.getElementById('edit-sch-note-tap').value = btn.dataset.tap;
+        document.getElementById('edit-sch-note-eat').value = btn.dataset.eat;
+        document.getElementById('edit-sch-start').value = btn.dataset.start;
+        document.getElementById('edit-sch-end').value = btn.dataset.end;
+        
+        document.getElementById('modal-edit-note').classList.remove('hidden');
+      });
+
+      // Lưu ghi chú
+      document.getElementById('save-edit-note')?.addEventListener('click', async function() {
+        const id = document.getElementById('edit-sch-id').value;
+        const ghi_chu_tap = document.getElementById('edit-sch-note-tap').value;
+        const ghi_chu_dinh_duong = document.getElementById('edit-sch-note-eat').value;
+        const gio_bat_dau = document.getElementById('edit-sch-start').value;
+        const gio_ket_thuc = document.getElementById('edit-sch-end').value;
+
+        this.disabled = true;
+        this.textContent = 'Đang lưu...';
+
+        try {
+          const res = await window.GymApp.api.put(`/pt/schedules/${id}`, {
+            ghi_chu_tap,
+            ghi_chu_dinh_duong,
+            gio_bat_dau,
+            gio_ket_thuc
+          });
+
+          if (res?.success) {
+            window.GymApp.toast('Đã cập nhật nhật ký tập luyện!', 'success');
+            document.getElementById('modal-edit-note').classList.add('hidden');
+            
+            // Cập nhật local data
+            const idx = window.GymApp.data.ptSchedules.findIndex(s => s.id == id);
+            if (idx !== -1) {
+              window.GymApp.data.ptSchedules[idx].ghi_chu_tap = ghi_chu_tap;
+              window.GymApp.data.ptSchedules[idx].ghi_chu_dinh_duong = ghi_chu_dinh_duong;
+              window.GymApp.data.ptSchedules[idx].gio_bat_dau = gio_bat_dau;
+              window.GymApp.data.ptSchedules[idx].gio_ket_thuc = gio_ket_thuc;
+            }
+            self._applyFilter();
+          } else {
+            window.GymApp.toast(res?.message || 'Lỗi khi lưu ghi chú', 'error');
+          }
+        } catch (err) {
+          console.error(err);
+          window.GymApp.toast('Lỗi kết nối máy chủ', 'error');
+        }
+        this.disabled = false;
+        this.innerHTML = '<span class="material-symbols-outlined text-sm">save</span>Lưu & Đồng bộ';
+      });
+
+      // Đóng modal
+      document.getElementById('close-edit-note')?.addEventListener('click', () => document.getElementById('modal-edit-note').classList.add('hidden'));
+      document.getElementById('cancel-edit-note')?.addEventListener('click', () => document.getElementById('modal-edit-note').classList.add('hidden'));
+
+      // Xác nhận buổi tập
+      document.getElementById('schedule-cards-wrap')?.addEventListener('click', async (e) => {
         const btn = e.target.closest('.btn-confirm-session');
         if (!btn || btn.disabled) return;
 
         const scheduleId = btn.dataset.id;
         const studentName = btn.dataset.name;
 
-        if (!confirm(`Xác nhận buổi tập với ${studentName} đã hoàn thành?\n(Buổi này sẽ được trừ từ gói PT.)`)) return;
+        if (!confirm(`Xác nhận buổi tập với ${studentName} đã hoàn thành?`)) return;
 
-        // Hiện trạng thái loading trên nút
         btn.disabled = true;
-        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">autorenew</span> Đang xử lý...`;
+        btn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">autorenew</span>`;
 
         try {
           const res = await window.GymApp.api.put(`/pt/schedules/${scheduleId}/confirm`, {});
           if (res?.success) {
-            // Cập nhật dữ liệu cục bộ ngay không cần reload toàn bộ
-            window.GymApp.toast(`✅ Đã xác nhận buổi tập với ${studentName}!`, 'success');
-
-            // Reload lại dữ liệu từ server rồi render lại bảng
+            window.GymApp.toast(`Đã xác nhận buổi tập với ${studentName}!`, 'success');
             const fresh = await window.GymApp.api.get('/pt/schedules');
             if (fresh?.success) window.GymApp.data.ptSchedules = fresh.data || [];
             self._applyFilter();
           } else {
             window.GymApp.toast(res?.message || 'Xác nhận thất bại!', 'error');
             btn.disabled = false;
-            btn.innerHTML = `<span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">check_circle</span> Xác nhận đã tập`;
+            btn.innerHTML = `<span class="material-symbols-outlined text-sm">check_circle</span> Xác nhận`;
           }
         } catch (err) {
           console.error(err);
-          window.GymApp.toast('Lỗi kết nối, vui lòng thử lại.', 'error');
+          window.GymApp.toast('Lỗi kết nối máy chủ', 'error');
           btn.disabled = false;
-          btn.innerHTML = `<span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">check_circle</span> Xác nhận đã tập`;
         }
       });
     }
@@ -633,31 +745,31 @@
           </div>
 
           ${students.length === 0
-          ? `<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-margin text-center text-on-surface-variant">
+            ? `<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant p-margin text-center text-on-surface-variant">
                  <span class="material-symbols-outlined text-4xl text-outline block mb-standard">person_off</span>
                  <p class="font-bold">Chưa có học viên nào</p>
                </div>`
-          : `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-loose">
-                ${students.map(sv => `
-                  <div class="gym-card bg-surface-container-lowest rounded-2xl border border-outline-variant p-loose shadow-sm flex flex-col items-center gap-standard">
-                    ${window.GymApp.avatarImg(sv.avatar, sv.ten, 'lg')}
-                    <div class="text-center">
-                      <p class="font-bold text-on-surface text-body-md">${sv.ten || '—'}</p>
-                    </div>
-                    <div class="w-full grid grid-cols-2 gap-sm">
-                      <div class="bg-surface-container rounded-xl p-compact text-center">
-                        <p class="text-on-surface-variant text-body-sm">Đã tập</p>
-                        <p class="font-bold text-brand-primary text-body-md">${sv.da_tap}</p>
-                      </div>
-                      <div class="bg-surface-container rounded-xl p-compact text-center">
-                        <p class="text-on-surface-variant text-body-sm">Còn lại</p>
-                        <p class="font-bold text-[#e65100] text-body-md">${sv.buoi_con_lai ?? '—'}</p>
-                      </div>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>`
-        }
+            : `<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-loose">
+                 ${students.map(sv => `
+                   <div class="gym-card bg-surface-container-lowest rounded-2xl border border-outline-variant p-loose shadow-sm flex flex-col items-center gap-standard">
+                     ${window.GymApp.avatarImg(sv.avatar, sv.ten, 'lg')}
+                     <div class="text-center">
+                       <p class="font-bold text-on-surface text-body-md">${sv.ten || '—'}</p>
+                     </div>
+                     <div class="w-full grid grid-cols-2 gap-sm">
+                       <div class="bg-surface-container rounded-xl p-compact text-center">
+                         <p class="text-on-surface-variant text-body-sm">Đã tập</p>
+                         <p class="font-bold text-brand-primary text-body-md">${sv.da_tap}</p>
+                       </div>
+                       <div class="bg-surface-container rounded-xl p-compact text-center">
+                         <p class="text-on-surface-variant text-body-sm">Còn lại</p>
+                         <p class="font-bold text-[#e65100] text-body-md">${sv.buoi_con_lai ?? '—'}</p>
+                       </div>
+                     </div>
+                   </div>
+                 `).join('')}
+               </div>`
+          }
         </div>
       `;
     },
@@ -689,7 +801,7 @@
           <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
             <!-- Avatar header -->
             <div class="section-header px-loose py-loose border-b border-outline-variant flex items-center gap-loose">
-            <div class="flex-shrink-0">
+              <div class="flex-shrink-0">
                 ${window.GymApp.avatarImg(u.avatar_url, u.ho_ten, 'xl')}
               </div>
               <div>

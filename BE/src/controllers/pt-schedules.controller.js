@@ -223,28 +223,40 @@ export const revertSchedule = (req, res) => {
 };
 
 // ── PUT /api/pt/schedules/:id ─────────────────────────────
-// Cập nhật lịch (đổi ngày/giờ — chỉ cho buổi chưa tập)
+// Cập nhật lịch (đổi ngày/giờ/ghi chú — dành cho PT/Admin)
 export const updateSchedule = (req, res) => {
   const { id } = req.params;
-  const { ngay_tap, gio_bat_dau, gio_ket_thuc, ghi_chu } = req.body;
+  const { ngay_tap, gio_bat_dau, gio_ket_thuc, ghi_chu, ghi_chu_tap, ghi_chu_dinh_duong } = req.body;
   const schedule = db.prepare('SELECT * FROM lich_tap WHERE id = ?').get(id);
   if (!schedule) return error(res, 'Không tìm thấy lịch tập.', 404);
+  
+  // Chỉ có thể sửa lịch đang ở trạng thái "cho_tap"
   if (schedule.trang_thai !== 'cho_tap') return error(res, 'Chỉ có thể sửa lịch đang ở trạng thái "cho_tap".', 400);
+
+  // Phân quyền: PT chỉ được sửa lịch của chính mình
+  if (req.user.vai_tro === 'pt') {
+    const hoSoPt = db.prepare('SELECT id FROM ho_so WHERE tai_khoan_id = ?').get(req.user.id);
+    if (!hoSoPt || schedule.pt_id !== hoSoPt.id) {
+      return error(res, 'Bạn chỉ có thể cập nhật buổi tập của chính mình.', 403);
+    }
+  }
 
   db.prepare(`
     UPDATE lich_tap SET
       ngay_tap = COALESCE(?, ngay_tap),
       gio_bat_dau = COALESCE(?, gio_bat_dau),
       gio_ket_thuc = COALESCE(?, gio_ket_thuc),
-      ghi_chu = COALESCE(?, ghi_chu)
+      ghi_chu = COALESCE(?, ghi_chu),
+      ghi_chu_tap = COALESCE(?, ghi_chu_tap),
+      ghi_chu_dinh_duong = COALESCE(?, ghi_chu_dinh_duong)
     WHERE id = ?
-  `).run(ngay_tap || null, gio_bat_dau || null, gio_ket_thuc || null, ghi_chu || null, id);
+  `).run(ngay_tap || null, gio_bat_dau || null, gio_ket_thuc || null, ghi_chu || null, ghi_chu_tap || null, ghi_chu_dinh_duong || null, id);
 
-  ghi_audit_log(req, 'UPDATE', 'lich_tap', parseInt(id), schedule, req.body, 'Cập nhật lịch tập');
+  ghi_audit_log(req, 'UPDATE', 'lich_tap', parseInt(id), schedule, req.body, 'Cập nhật lịch tập & ghi chú');
 
-  // Sinh thông báo realtime cho hội viên và PT khi giờ/ngày tập bị thay đổi
+  // Sinh thông báo realtime cho hội viên khi thông tin thay đổi
   const updated = db.prepare(`
-    SELECT lt.ngay_tap, lt.gio_bat_dau, lt.gio_ket_thuc,
+    SELECT lt.ngay_tap, lt.gio_bat_dau, lt.gio_ket_thuc, lt.hoi_vien_id,
            hv.ho_ten AS ho_ten_hoi_vien,
            pt.ho_ten AS ho_ten_pt
     FROM lich_tap lt
@@ -254,14 +266,23 @@ export const updateSchedule = (req, res) => {
   `).get(id);
 
   if (updated) {
-    const noiDung = `Buổi tập của ${updated.ho_ten_hoi_vien} với PT ${updated.ho_ten_pt} đã được dời sang ${updated.ngay_tap} lúc ${updated.gio_bat_dau}–${updated.gio_ket_thuc}`;
+    let tieuDe = 'Lịch tập đã cập nhật';
+    let noiDung = `PT ${updated.ho_ten_pt} vừa cập nhật thông tin buổi tập ngày ${updated.ngay_tap}`;
+    
+    // Nếu thay đổi giờ/ngày thì thông báo rõ hơn
+    if (ngay_tap || gio_bat_dau || gio_ket_thuc) {
+      tieuDe = 'Lịch tập đã thay đổi thời gian';
+      noiDung = `Buổi tập của bạn với PT ${updated.ho_ten_pt} đã được dời sang ${updated.ngay_tap} lúc ${updated.gio_bat_dau}–${updated.gio_ket_thuc}`;
+    }
+
     createNotification(
       'cap_nhat_buoi_tap',
-      'Lịch tập đã thay đổi',
+      tieuDe,
       noiDung,
       parseInt(id),
       'lich_tap',
-      'ca_hai'
+      'hoi_vien',
+      updated.hoi_vien_id
     );
   }
 
