@@ -187,7 +187,8 @@ if (!migratedV4) {
                           'dang_ky_goi_pt_moi', 'huy_buoi_tap',
                           'hoan_tac_buoi_tap', 'tai_khoan_bi_khoa',
                           'tai_khoan_moi', 'tom_tat_buoi_sang',
-                          'het_han_goi_pt_thang', 'cap_nhat_buoi_tap'
+                          'het_han_goi_pt_thang', 'cap_nhat_buoi_tap',
+                          'ghi_chu_moi'
                       )),
         tieu_de       TEXT NOT NULL,
         noi_dung      TEXT NOT NULL,
@@ -213,6 +214,39 @@ if (!migratedV4) {
   // Lưu flag migration ngoài transaction để tránh nested prepare lock
   db.prepare(`INSERT OR IGNORE INTO cau_hinh (khoa, gia_tri, mo_ta) VALUES ('db_migration_thongbao_v4', '1', 'Mở rộng bảng thong_bao lên 16 loại: thêm cap_nhat_buoi_tap')`).run();
   console.log('[DB] ✅ Migration thong_bao v4 hoàn thành — 16 loại thông báo (bổ sung cap_nhat_buoi_tap).');
+}
+
+// ── Migration v5: Mở rộng thong_bao cho hội viên/PT ──────
+const migratedV5 = db.prepare(`SELECT gia_tri FROM cau_hinh WHERE khoa = 'db_migration_thongbao_v5'`).get();
+if (!migratedV5) {
+  db.transaction(() => {
+    db.exec(`ALTER TABLE thong_bao RENAME TO thong_bao_v4_backup;`);
+    db.exec(`
+      CREATE TABLE thong_bao (
+        id            INTEGER PRIMARY KEY AUTOINCREMENT,
+        loai          TEXT NOT NULL,
+        tieu_de       TEXT NOT NULL,
+        noi_dung      TEXT NOT NULL,
+        doi_tuong_id  INTEGER,
+        doi_tuong     TEXT,
+        danh_cho      TEXT NOT NULL CHECK (danh_cho IN ('admin','le_tan','ca_hai','hoi_vien','pt')),
+        nguoi_nhan_id INTEGER REFERENCES ho_so(id),
+        da_doc        INTEGER NOT NULL DEFAULT 0 CHECK (da_doc IN (0,1)),
+        doc_boi_id    INTEGER REFERENCES tai_khoan(id),
+        ngay_doc      DATETIME,
+        ngay_tao      DATETIME NOT NULL DEFAULT (datetime('now','localtime'))
+      );
+      CREATE INDEX IF NOT EXISTS idx_thongbao_nhan ON thong_bao(nguoi_nhan_id, da_doc);
+    `);
+    db.exec(`
+      INSERT INTO thong_bao (id, loai, tieu_de, noi_dung, doi_tuong_id, doi_tuong, danh_cho, da_doc, doc_boi_id, ngay_doc, ngay_tao)
+      SELECT id, loai, tieu_de, noi_dung, doi_tuong_id, doi_tuong, danh_cho, da_doc, doc_boi_id, ngay_doc, ngay_tao
+      FROM thong_bao_v4_backup;
+    `);
+    db.exec(`DROP TABLE thong_bao_v4_backup;`);
+  })();
+  db.prepare(`INSERT OR IGNORE INTO cau_hinh (khoa, gia_tri, mo_ta) VALUES ('db_migration_thongbao_v5', '1', 'Hỗ trợ thông báo cho Hội viên/PT và cột nguoi_nhan_id')`).run();
+  console.log('[DB] ✅ Migration thong_bao v5 hoàn thành.');
 }
 
 export default db;

@@ -292,6 +292,26 @@ export const updateNotes = (req, res) => {
     WHERE id = ?
   `).run(ghi_chu_tap || null, ghi_chu_dinh_duong || null, id);
 
+  // Gửi thông báo cho hội viên
+  const info = db.prepare(`
+    SELECT lt.ngay_tap, pt.ho_ten AS ten_pt, lt.hoi_vien_id
+    FROM lich_tap lt
+    JOIN ho_so pt ON pt.id = lt.pt_id
+    WHERE lt.id = ?
+  `).get(id);
+
+  if (info) {
+    createNotification(
+      'ghi_chu_moi',
+      'Cập nhật ghi chú buổi tập',
+      `PT ${info.ten_pt} vừa cập nhật ghi chú dinh dưỡng & tập luyện cho buổi tập ngày ${info.ngay_tap} của bạn. Hãy vào xem ngay!`,
+      parseInt(id),
+      'lich_tap',
+      'hoi_vien',
+      info.hoi_vien_id
+    );
+  }
+
   ghi_audit_log(req, 'UPDATE', 'lich_tap', parseInt(id), 
     { ghi_chu_tap: schedule.ghi_chu_tap, ghi_chu_dinh_duong: schedule.ghi_chu_dinh_duong }, 
     { ghi_chu_tap, ghi_chu_dinh_duong }, 

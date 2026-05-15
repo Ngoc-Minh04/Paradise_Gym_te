@@ -634,6 +634,33 @@ export const getMyNotifications = (req, res) => {
   const notifications = [];
   let da_check_in_hom_nay = false;
 
+  // 0. Lấy thông báo từ bảng thong_bao (Ghi chú mới, Hủy lịch, Cập nhật lịch...)
+  const staticNotis = db.prepare(`
+    SELECT loai, tieu_de, noi_dung, da_doc, ngay_tao
+    FROM thong_bao
+    WHERE nguoi_nhan_id = ? OR (danh_cho = ? AND nguoi_nhan_id IS NULL)
+    ORDER BY ngay_tao DESC LIMIT 10
+  `).all(ho_so_id, vai_tro);
+
+  const loaiMap = {
+    'ghi_chu_moi': { icon: 'description', muc_do: 'success' },
+    'cap_nhat_buoi_tap': { icon: 'event_repeat', muc_do: 'warning' },
+    'huy_buoi_tap': { icon: 'event_busy', muc_do: 'danger' },
+    'tai_khoan_moi': { icon: 'lock_open', muc_do: 'info' }
+  };
+
+  staticNotis.forEach(n => {
+    const config = loaiMap[n.loai] || { icon: 'notifications', muc_do: 'info' };
+    notifications.push({
+      muc_do: n.da_doc ? 'info' : config.muc_do,
+      icon: config.icon,
+      tieu_de: n.tieu_de,
+      noi_dung: n.noi_dung,
+      ngay_tao: n.ngay_tao,
+      is_static: true
+    });
+  });
+
   // ── HÀNH TRÌNH HỘI VIÊN ─────────────────────────────────
   if (vai_tro === 'hoi_vien') {
 
