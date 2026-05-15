@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paradise GYM - Hội viên</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-surface": "var(--text-on-surface)",
+            "on-surface-variant": "var(--text-on-surface-variant)",
+            "surface-container-lowest": "var(--bg-surface-lowest)",
+            "surface-container-low": "var(--bg-surface-low)",
+            "surface-container": "var(--bg-surface-container)",
+            "surface-container-high": "var(--bg-surface-high)",
+            "outline-variant": "var(--outline-variant)",
+            "background": "var(--bg-background)",
+            "brand-primary": "#1D9336",
+            "primary-container": "#03872c",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6",
+            "secondary": "#575f67"
+          },
+          spacing: {
+            "s1": "6px",
+            "s2": "8px",
+            "s3": "10px",
+            "s4": "12px",
+            "s5": "16px",
+            "s6": "24px",
+            "compact": "8px",
+            "standard": "10px",
+            "loose": "20px",
+            "margin": "32px",
+            "atom": "5px"
+          },
+          fontSize: {
+            "label-sm": ["12px", { lineHeight: "16px", fontWeight: "500" }],
+            "label-md": ["14px", { lineHeight: "20px", fontWeight: "600" }],
+            "body-sm": ["12px", { lineHeight: "16px" }],
+            "body-md": ["14px", { lineHeight: "20px" }],
+            "body-base": ["16px", { lineHeight: "24px" }],
+            "headline-sm": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+            "headline-md": ["28px", { lineHeight: "36px", fontWeight: "700" }],
+            "display": ["36px", { lineHeight: "44px", fontWeight: "800" }]
+          },
+          borderRadius: {
+            "xl": "8px",
+            "full": "999px"
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/air-datepicker@3/air-datepicker.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3/air-datepicker.min.js"></script>
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+      background: var(--bg-background);
+    }
+
+    .member-shell {
+      min-height: calc(100vh - 64px);
+    }
+
+    .member-nav-active {
+      background: #aff0d5;
+      color: #306f5a;
+      font-weight: 700;
+    }
+
+    .member-card {
+      background: var(--bg-surface-lowest);
+      border: 1px solid var(--outline-variant);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .focus-ring:focus {
+      outline: none;
+      box-shadow: rgba(29, 147, 54, 0.18) 0 0 0 3px;
+    }
+  </style>
+</head>
+
+<body class="text-on-surface min-h-screen">
+  <script>
+    window.GymApp = { data: {}, pages: {}, currentPage: null };
+  </script>
+
+  <header
+    class="sticky top-0 z-40 h-16 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-s6">
+    <div class="flex items-center gap-s4">
+      <div class="w-9 h-9 rounded-xl bg-brand-primary flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-white"
+          style="font-variation-settings:'FILL' 1">fitness_center</span>
+      </div>
+      <div>
+        <h1 class="text-headline-sm font-bold text-brand-primary leading-tight">Paradise GYM</h1>
+        <p class="text-on-surface-variant text-label-sm">Cổng thông tin hội viên</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-s3">
+
+      <!-- 🔔 Bell Notification Icon -->
+      <div id="member-notif-wrapper" style="position:relative;">
+        <button id="member-notif-btn" title="Thông báo" style="
+          position:relative;
+          padding:6px;
+          border-radius:8px;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          cursor:pointer;
+          background:transparent;
+          border:none;
+          color:var(--text-on-surface-variant);
+          transition:color .15s,background .15s;
+        " onmouseover="this.style.color='#1D9336';this.style.background='var(--bg-surface-container)'"
+          onmouseout="this.style.color='var(--text-on-surface-variant)';this.style.background='transparent'">
+          <span class="material-symbols-outlined" style="font-size:20px">notifications</span>
+          <span id="member-notif-badge" style="
+            display:none;
+            position:absolute;
+            top:2px;right:2px;
+            min-width:16px;height:16px;
+            background:#dc2626;
+            color:#fff;
+            font-size:9px;font-weight:700;
+            border-radius:999px;
+            border:2px solid var(--bg-surface-lowest, #fff);
+            align-items:center;justify-content:center;
+            padding:0 3px;
+            line-height:1;
+          ">0</span>
+        </button>
+
+        <!-- Dropdown thông báo -->
+        <div id="member-notif-dropdown" style="
+          display:none;
+          position:absolute;
+          top:calc(100% + 8px);
+          right:0;
+          width:320px;
+          max-height:400px;
+          overflow-y:auto;
+          background:var(--bg-surface-lowest);
+          border:1px solid var(--outline-variant);
+          border-radius:12px;
+          box-shadow:0 8px 24px rgba(0,0,0,0.12);
+          z-index:200;
+        ">
+          <div
+            style="padding:12px 16px;border-bottom:1px solid var(--outline-variant);display:flex;justify-content:space-between;align-items:center;">
+            <p style="font-weight:700;font-size:13px;color:var(--text-on-surface);margin:0">Thông báo của tôi</p>
+            <button id="member-notif-clear-all" style="
+              display:flex;align-items:center;gap:4px;
+              background:none;border:none;cursor:pointer;
+              color:#ef4444;font-size:11px;font-weight:600;
+              transition:color .15s;
+            " onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'">
+              <span class="material-symbols-outlined" style="font-size:14px">delete_sweep</span>Xóa tất cả
+            </button>
+          </div>
+          <div id="member-notif-list" style="padding:8px;">
+            <div style="text-align:center;padding:24px 16px;color:var(--text-on-surface-variant)">
+              <span class="material-symbols-outlined"
+                style="font-size:32px;display:block;margin-bottom:8px">notifications_none</span>
+              <p style="font-size:12px;margin:0">Đang tải thông báo...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="theme-toggle"
+        class="material-symbols-outlined text-on-surface-variant hover:text-brand-primary p-s2 rounded-full hover:bg-surface-container transition-colors focus-ring"
+        title="Chuyển chế độ">
+        <span id="theme-icon">dark_mode</span>
+      </button>
+      <button id="header-avatar"
+        class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant flex items-center justify-center focus-ring"
+        title="Hồ sơ" data-tab="profile">
+        <span class="material-symbols-outlined text-on-surface-variant"
+          style="font-variation-settings:'FILL' 1">person</span>
+      </button>
+      <button id="btn-logout"
+        class="material-symbols-outlined text-on-surface-variant hover:text-error p-s2 rounded-full hover:bg-error-container transition-colors focus-ring"
+        title="Đăng xuất">logout</button>
+    </div>
+  </header>
+
+  <div class="member-shell flex">
+    <aside
+      class="hidden md:flex flex-col w-64 bg-surface-container-low border-r border-outline-variant sticky top-16 h-[calc(100vh-64px)] py-s6">
+      <nav class="flex flex-col gap-s1">
+        <button
+          class="member-side-nav mx-s2 flex items-center gap-s3 px-s4 py-s3 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all text-left"
+          data-tab="dashboard">
+          <span class="material-symbols-outlined">home</span>
+          <span class="text-label-md">Trang chủ</span>
+        </button>
+        <button
+          class="member-side-nav mx-s2 flex items-center gap-s3 px-s4 py-s3 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all text-left"
+          data-tab="my-schedule">
+          <span class="material-symbols-outlined">event</span>
+          <span class="text-label-md">Lịch tập</span>
+        </button>
+        <button
+          class="member-side-nav mx-s2 flex items-center gap-s3 px-s4 py-s3 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all text-left"
+          data-tab="checkins">
+          <span class="material-symbols-outlined">how_to_reg</span>
+          <span class="text-label-md">Vào / Ra</span>
+        </button>
+        <button
+          class="member-side-nav mx-s2 flex items-center gap-s3 px-s4 py-s3 rounded-full text-on-surface-variant hover:bg-surface-container-high transition-all text-left"
+          data-tab="profile">
+          <span class="material-symbols-outlined">person</span>
+          <span class="text-label-md">Cá nhân</span>
+        </button>
+      </nav>
+
+      <div class="mt-auto px-s4">
+        <div class="rounded-xl bg-surface-container-lowest border border-outline-variant p-s4">
+          <p class="text-label-md font-bold text-on-surface">Cần hỗ trợ?</p>
+          <p class="text-body-sm text-on-surface-variant mt-s1">Liên hệ lễ tân để gia hạn gói tập hoặc đăng ký PT.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main id="content-area" class="flex-1 p-s6 pb-24 md:pb-s6 max-w-6xl mx-auto w-full"></main>
+  </div>
+
+  <nav
+    class="md:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-surface-container-lowest border-t border-outline-variant shadow-lg grid grid-cols-4">
+    <button data-tab="dashboard"
+      class="member-bottom-nav flex flex-col items-center justify-center gap-s1 text-on-surface-variant">
+      <span class="material-symbols-outlined">home</span>
+      <span class="text-label-sm">Trang chủ</span>
+    </button>
+    <button data-tab="my-schedule"
+      class="member-bottom-nav flex flex-col items-center justify-center gap-s1 text-on-surface-variant">
+      <span class="material-symbols-outlined">event</span>
+      <span class="text-label-sm">Lịch tập</span>
+    </button>
+    <button data-tab="checkins"
+      class="member-bottom-nav flex flex-col items-center justify-center gap-s1 text-on-surface-variant">
+      <span class="material-symbols-outlined">how_to_reg</span>
+      <span class="text-label-sm">Vào/Ra</span>
+    </button>
+    <button data-tab="profile"
+      class="member-bottom-nav flex flex-col items-center justify-center gap-s1 text-on-surface-variant">
+      <span class="material-symbols-outlined">person</span>
+      <span class="text-label-sm">Cá nhân</span>
+    </button>
+  </nav>
+
+  <script>
+    window.GymApp.toast = function (message, type = 'success') {
+      const colors = { success: 'background:#1D9336', error: 'background:#ba1a1a', info: 'background:#575f67' };
+      const icons = { success: 'check_circle', error: 'error', info: 'info' };
+      const el = document.createElement('div');
+      el.style.cssText = `position:fixed;bottom:84px;right:20px;z-index:9997;${colors[type]};color:#fff;padding:10px 20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.2);font-size:14px;display:flex;align-items:center;gap:8px;font-weight:500;`;
+      el.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px">${icons[type]}</span>${message}`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    };
+
+    window.GymApp.formatDate = d => d ? new Date(d).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+    window.GymApp.formatTime = t => t || '—';
+    window.GymApp.formatEnumLabel = function (value) {
+      const map = {
+        cho_tap: 'Chờ tập', da_tap: 'Đã tập', da_xac_nhan: 'Đã xác nhận', da_huy: 'Đã hủy',
+        hoan_tac: 'Hoàn tác', vang: 'Vắng', vao: 'Vào', ra: 'Ra',
+        dang_hoat_dong: 'Đang hoạt động', hoat_dong: 'Hoạt động', het_han: 'Hết hạn', chua_dang_ky: 'Chưa đăng ký',
+        thuong: 'Thường', Normal: 'Thường', Student: 'Sinh viên', vip: 'VIP', premium: 'Premium',
+        the_tu: 'Thẻ từ', qr_code: 'QR Code', khuon_mat: 'Khuôn mặt', thu_cong: 'Thủ công',
+        ca_nhan: 'Cá nhân', nhom: 'Nhóm'
+      };
+      if (!value) return '—';
+      return map[value] || String(value).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    };
+
+    window.GymApp.avatarInitials = function (name, size = 'md') {
+      const parts = (name || '').trim().split(' ');
+      const initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : (name || '??').slice(0, 2).toUpperCase();
+      const bg = ['#006b20', '#a52d59', '#575f67', '#03872c', '#005317', '#1D9336'][((name || '').charCodeAt(0) || 0) % 6];
+      const dim = size === 'sm' ? 32 : size === 'lg' ? 48 : size === 'xl' ? 72 : 36;
+      const fs = size === 'sm' ? 12 : size === 'lg' ? 16 : size === 'xl' ? 24 : 14;
+      return `<div style="width:${dim}px;height:${dim}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${fs}px;flex-shrink:0;">${initials}</div>`;
+    };
+
+    window.GymApp.avatarImg = function (url, name, size = 'md') {
+      const dim = size === 'sm' ? 32 : size === 'lg' ? 48 : size === 'xl' ? 72 : 36;
+      if (url) return `<img src="${url}" alt="${name || ''}" width="${dim}" height="${dim}" style="width:${dim}px;height:${dim}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid #becab9;" loading="lazy">`;
+      return window.GymApp.avatarInitials(name, size);
+    };
+
+    window.GymApp.statusBadge = function (status) {
+      const map = {
+        cho_tap: { bg: '#fff3e0', color: '#e65100', label: 'Chờ tập' },
+        da_tap: { bg: '#e7f5e9', color: '#1D9336', label: 'Đã tập' },
+        da_xac_nhan: { bg: '#e7f5e9', color: '#1D9336', label: 'Đã xác nhận' },
+        da_huy: { bg: '#ffdad6', color: '#93000a', label: 'Đã hủy' },
+        hoan_tac: { bg: '#fff8e1', color: '#f57f17', label: 'Hoàn tác' },
+        vang: { bg: '#f3e5f5', color: '#6a1b9a', label: 'Vắng' },
+        vao: { bg: '#e7f5e9', color: '#1D9336', label: 'Vào' },
+        ra: { bg: '#e3f2fd', color: '#1565c0', label: 'Ra' },
+        dang_hoat_dong: { bg: '#e7f5e9', color: '#1D9336', label: 'Đang hoạt động' },
+        het_han: { bg: '#ffdad6', color: '#93000a', label: 'Hết hạn' },
+        chua_dang_ky: { bg: '#ebeef3', color: '#3f4941', label: 'Chưa đăng ký' }
+      };
+      const s = map[status] || { bg: '#ebeef3', color: '#181c20', label: window.GymApp.formatEnumLabel(status) };
+      return `<span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;background:${s.bg};color:${s.color};white-space:nowrap">${s.label}</span>`;
+    };
+
+    window.GymApp.localeVi = {
+      days: ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'],
+      daysShort: ['CN', 'Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7'],
+      daysMin: ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+      months: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'],
+      monthsShort: ['Th 1', 'Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7', 'Th 8', 'Th 9', 'Th 10', 'Th 11', 'Th 12'],
+      today: 'Hôm nay',
+      clear: 'Xóa',
+      dateFormat: 'yyyy-MM-dd',
+      firstDay: 1
+    };
+
+    window.GymApp.initDatePickers = function (container) {
+      if (typeof AirDatepicker !== 'undefined') {
+        const inputs = container.querySelectorAll('input[type="date"]:not([data-airpicker])');
+        inputs.forEach(originalInput => {
+          originalInput.setAttribute('data-airpicker', 'true');
+          originalInput.style.display = 'none';
+
+          const visibleInput = document.createElement('input');
+          visibleInput.type = 'text';
+          visibleInput.className = originalInput.className;
+          visibleInput.placeholder = 'dd/mm/yyyy';
+          originalInput.parentNode.insertBefore(visibleInput, originalInput);
+
+          const baseDescriptor = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+
+          const adp = new AirDatepicker(visibleInput, {
+            locale: window.GymApp.localeVi,
+            dateFormat: 'dd/MM/yyyy',
+            autoClose: true,
+            onSelect: function ({ date }) {
+              if (date && !Array.isArray(date)) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                baseDescriptor.set.call(originalInput, `${y}-${m}-${d}`);
+                originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+              } else {
+                baseDescriptor.set.call(originalInput, '');
+                originalInput.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }
+          });
+
+          Object.defineProperty(originalInput, 'value', {
+            get: function() {
+              return baseDescriptor.get.call(originalInput);
+            },
+            set: function(val) {
+              baseDescriptor.set.call(originalInput, val);
+              if (val) {
+                const parts = val.split('-');
+                if (parts.length === 3) {
+                  adp.selectDate(new Date(parts[0], parts[1] - 1, parts[2]), { silent: true });
+                }
+              } else { adp.clear({ silent: true }); }
+            }
+          });
+
+          const initialVal = baseDescriptor.get.call(originalInput);
+          if (initialVal) {
+            const parts = initialVal.split('-');
+            if (parts.length === 3) {
+              adp.selectDate(new Date(parts[0], parts[1] - 1, parts[2]), { silent: true });
+            }
+          }
+        });
+      }
+    };
+
+    // Auto initialize Air-datepicker for dynamically added elements
+    document.addEventListener('DOMContentLoaded', () => {
+      window.GymApp.initDatePickers(document.body);
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+          if (mutation.addedNodes.length) {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === 1) { // ELEMENT_NODE
+                if (node.tagName === 'INPUT' && node.type === 'date') {
+                  window.GymApp.initDatePickers(node.parentElement);
+                } else if (node.querySelectorAll) {
+                  window.GymApp.initDatePickers(node);
+                }
+              }
+            });
+          }
+        });
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/member-portal.js"></script>
+</body>
+
+</html>
