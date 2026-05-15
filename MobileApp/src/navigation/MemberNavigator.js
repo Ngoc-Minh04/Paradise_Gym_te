@@ -10,6 +10,7 @@ import MemberScheduleScreen from '../screens/member/MemberScheduleScreen';
 import MemberNotificationScreen from '../screens/member/MemberNotificationScreen';
 import MemberProfileScreen from '../screens/member/MemberProfileScreen';
 import MemberCheckinsScreen from '../screens/member/MemberCheckinsScreen';
+import RegulationsScreen from '../screens/common/RegulationsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -111,6 +112,14 @@ export default function MemberNavigator() {
       <Tab.Screen
         name="Checkins"
         component={MemberCheckinsScreen}
+        options={{
+          tabBarItemStyle: { display: 'none' },
+        }}
+      />
+
+      <Tab.Screen
+        name="Regulations"
+        component={RegulationsScreen}
         options={{
           tabBarItemStyle: { display: 'none' },
         }}

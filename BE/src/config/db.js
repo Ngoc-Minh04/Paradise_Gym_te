@@ -45,6 +45,7 @@ db.exec(`
 // Chèn cấu hình mặc định (bỏ qua nếu đã tồn tại)
 db.prepare(`INSERT OR IGNORE INTO cau_hinh (khoa, gia_tri, mo_ta) VALUES (?, ?, ?)`).run('gio_dong_cua', '22:00', 'Giờ cron job trừ buổi PT chạy');
 db.prepare(`INSERT OR IGNORE INTO cau_hinh (khoa, gia_tri, mo_ta) VALUES (?, ?, ?)`).run('qr_token_ttl_phut', '5', 'Thời gian hiệu lực QR Code (phút)');
+db.prepare(`INSERT OR IGNORE INTO cau_hinh (khoa, gia_tri, mo_ta) VALUES (?, ?, ?)`).run('quy_dinh_phong_tap', '1. Luôn mang theo thẻ hội viên hoặc mã QR để check-in.\n2. Vui lòng mang giày thể thao sạch và trang phục phù hợp.\n3. Cất tạ và dụng cụ về đúng nơi quy định sau khi sử dụng.\n4. Giữ vệ sinh chung, lau sạch mồ hôi trên máy sau khi tập.\n5. Không gây ồn ào hoặc làm phiền người khác.\n6. Tuân thủ sự hướng dẫn của huấn luyện viên.', 'Nội dung quy định chung của phòng tập');
 
 // ── Migration v2: Tạo / nâng cấp bảng thong_bao lên 15 loại ──────
 // Dùng flag trong cau_hinh để chỉ chạy migration 1 lần duy nhất

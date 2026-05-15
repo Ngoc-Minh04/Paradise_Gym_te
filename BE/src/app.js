@@ -19,6 +19,7 @@ import staffRoutes             from './routes/staff.routes.js';
 import revenueRoutes           from './routes/revenue.routes.js';
 import qrCheckinRoutes         from './routes/qr-checkin.routes.js';
 import notificationsRoutes     from './routes/notifications.routes.js';
+import configRoutes            from './routes/config.routes.js';
 
 // Import error handlers
 import { notFound, globalError } from './middlewares/error-handler.js';
@@ -48,6 +49,7 @@ app.use('/api/staff',             staffRoutes);
 app.use('/api/revenue',           revenueRoutes);
 app.use('/api/checkin',           qrCheckinRoutes);
 app.use('/api/notifications',     notificationsRoutes);
+app.use('/api/config',            configRoutes);
 
 // ── Health check ───────────────────────────────────────────
 app.get('/api/health', (req, res) => {

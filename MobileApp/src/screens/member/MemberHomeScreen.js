@@ -244,12 +244,12 @@ export default function MemberHomeScreen({ navigation }) {
               {/* Trạng thái + tên gói */}
               <View style={styles.contractTop}>
                 <View style={styles.contractBadge}>
-                  <ShieldCheck color={G.primary} size={12} strokeWidth={2.5} />
+                  <ShieldCheck color={G.primary} size={14} strokeWidth={2.5} />
                   <Text style={styles.contractBadgeText}>Đang hoạt động</Text>
                 </View>
                 {remaining !== null && remaining <= 7 && (
                   <View style={[styles.contractBadge, { backgroundColor: G.dangerLight }]}>
-                    <Clock color={G.danger} size={12} strokeWidth={2.5} />
+                    <Clock color={G.danger} size={14} strokeWidth={2.5} />
                     <Text style={[styles.contractBadgeText, { color: G.danger }]}>Sắp hết hạn</Text>
                   </View>
                 )}
@@ -259,13 +259,13 @@ export default function MemberHomeScreen({ navigation }) {
               {/* Thông số grid */}
               <View style={styles.contractGrid}>
                 <View style={styles.contractGridItem}>
-                  <CalendarCheck color={G.gray400} size={14} strokeWidth={2} />
+                  <CalendarCheck color={G.gray400} size={16} strokeWidth={2} />
                   <Text style={styles.contractGridLabel}>Từ ngày</Text>
                   <Text style={styles.contractGridValue}>{formatDate(activePlan.tu_ngay)}</Text>
                 </View>
                 <View style={styles.contractDivider} />
                 <View style={styles.contractGridItem}>
-                  <Clock color={remaining !== null && remaining <= 7 ? G.danger : G.gray400} size={14} strokeWidth={2} />
+                  <Clock color={remaining !== null && remaining <= 7 ? G.danger : G.gray400} size={16} strokeWidth={2} />
                   <Text style={styles.contractGridLabel}>Hết hạn</Text>
                   <Text style={[styles.contractGridValue, remaining !== null && remaining <= 7 && { color: G.danger }]}>
                     {formatDate(activePlan.den_ngay)}
@@ -273,7 +273,7 @@ export default function MemberHomeScreen({ navigation }) {
                 </View>
                 <View style={styles.contractDivider} />
                 <View style={styles.contractGridItem}>
-                  <TrendingUp color={G.primary} size={14} strokeWidth={2} />
+                  <TrendingUp color={G.primary} size={16} strokeWidth={2} />
                   <Text style={styles.contractGridLabel}>Còn lại</Text>
                   <Text style={[styles.contractGridValue, { color: remaining !== null && remaining <= 7 ? G.danger : G.primary }]}>
                     {remaining !== null ? `${remaining} ngày` : '—'}
@@ -284,7 +284,7 @@ export default function MemberHomeScreen({ navigation }) {
               {/* HLV PT (nếu có) */}
               {activePT ? (
                 <View style={styles.ptRow}>
-                  <Dumbbell color={G.primary} size={14} strokeWidth={2} />
+                  <Dumbbell color={G.primary} size={16} strokeWidth={2} />
                   <Text style={styles.ptRowText}>
                     {activePT.ten_goi_pt ? (
                       <>
@@ -535,9 +535,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
   },
-  contractBadgeText: { fontSize: 10, fontWeight: '700', color: G.primary },
+  contractBadgeText: { fontSize: 11, fontWeight: '700', color: G.primary },
   contractPackageName: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '800',
     color: G.gray900,
     marginBottom: 12,
@@ -556,8 +556,8 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   contractDivider: { width: 1, backgroundColor: G.gray200 },
-  contractGridLabel: { fontSize: 10, color: G.gray400, fontWeight: '500' },
-  contractGridValue: { fontSize: 12, fontWeight: '700', color: G.gray700 },
+  contractGridLabel: { fontSize: 12, color: G.gray400, fontWeight: '500' },
+  contractGridValue: { fontSize: 15, fontWeight: '700', color: G.gray700 },
   ptRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -566,7 +566,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
   },
-  ptRowText: { fontSize: 13, color: G.gray500, flex: 1 },
+  ptRowText: { fontSize: 15, color: G.gray500, flex: 1 },
   emptyContract: {
     alignItems: 'center',
     paddingVertical: 24,

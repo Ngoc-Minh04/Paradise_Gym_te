@@ -9,6 +9,7 @@ import PTQRCodeScreen from '../screens/pt/PTQRCodeScreen';
 import PTScheduleScreen from '../screens/pt/PTScheduleScreen';
 import PTStudentsScreen from '../screens/pt/PTStudentsScreen';
 import PTProfileScreen from '../screens/pt/PTProfileScreen';
+import RegulationsScreen from '../screens/common/RegulationsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -103,6 +104,14 @@ export default function PTNavigator() {
         options={{
           tabBarLabel: ({ color, focused }) => <TabLabel label="Cá nhân" color={color} focused={focused} />,
           tabBarIcon: ({ color, focused }) => <TabIcon IconComponent={User} color={color} focused={focused} />,
+        }}
+      />
+
+      <Tab.Screen
+        name="Regulations"
+        component={RegulationsScreen}
+        options={{
+          tabBarItemStyle: { display: 'none' },
         }}
       />
     </Tab.Navigator>

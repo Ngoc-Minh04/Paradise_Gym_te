@@ -294,11 +294,18 @@ export const deleteMember = (req, res) => {
 // ── GET /api/members/check-duplicate ─────────────────────
 export const checkDuplicate = (req, res) => {
   const { field, value, exclude_id } = req.query;
-  const allowed = ['so_dien_thoai', 'cmnd_cccd', 'email'];
-  if (!field || !allowed.includes(field)) return error(res, 'field không hợp lệ', 400);
+  const fieldMap = {
+    'so_dien_thoai': 'so_dien_thoai',
+    'cmnd_cccd': 'cmnd_cccd',
+    'cccd': 'cmnd_cccd',
+    'email': 'email'
+  };
+
+  const dbField = fieldMap[field];
+  if (!dbField) return error(res, 'field không hợp lệ', 400);
   if (!value || !value.trim()) return success(res, { exists: false });
 
-  let query = `SELECT id FROM ho_so WHERE ${field} = ? AND is_deleted = 0`;
+  let query = `SELECT id FROM ho_so WHERE ${dbField} = ? AND is_deleted = 0`;
   const params = [value.trim()];
   if (exclude_id) { query += ' AND id != ?'; params.push(exclude_id); }
 

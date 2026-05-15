@@ -197,11 +197,10 @@
   };
 
   // ===== AVATAR WITH IMAGE =====
-  window.GymApp.avatarImg = function (avatarUrl, name, size = 'md') {
+  window.GymApp.avatarImg = function (avatarUrl, name, size = 'md', customStyle = '') {
     const dim = size === 'sm' ? 32 : size === 'lg' ? 48 : 36;
-    const cls = `border border-outline-variant flex-shrink-0 avatar-img`;
     if (avatarUrl) {
-      return `<img src="${avatarUrl}" alt="${name}" width="${dim}" height="${dim}" style="width:${dim}px;height:${dim}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid #becab9;" loading="lazy">`;
+      return `<img src="${avatarUrl}" alt="${name}" width="${dim}" height="${dim}" style="width:${dim}px;height:${dim}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid #becab9;${customStyle}" loading="lazy">`;
     }
     return window.GymApp.avatarInitials(name, size);
   };
@@ -261,6 +260,7 @@
           },
           prevHtml: '<span class="material-symbols-outlined">chevron_left</span>',
           nextHtml: '<span class="material-symbols-outlined">chevron_right</span>',
+          repositionOnScroll: true,
           onSelect: function ({ date }) {
             if (date && !Array.isArray(date)) {
               const y = date.getFullYear();
@@ -541,7 +541,7 @@
         document.getElementById('profile-so-dien-thoai').value = u.so_dien_thoai || '';
         document.getElementById('profile-email').value = u.email || '';
         if (u.avatar_url && window.GymApp.avatarImg) {
-          document.getElementById('admin-profile-avatar-preview').innerHTML = window.GymApp.avatarImg(u.avatar_url, u.ho_ten, 'lg', 'width:100%;height:100%;object-fit:cover;');
+          document.getElementById('admin-profile-avatar-preview').innerHTML = window.GymApp.avatarImg(u.avatar_url, u.ho_ten, 'lg', 'width:100%;height:100%;');
         } else {
           document.getElementById('admin-profile-avatar-preview').innerHTML = '<span class="material-symbols-outlined" style="font-size:40px;color:#94a3b8;position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);font-variation-settings:\'FILL\' 1;">person</span>';
         }

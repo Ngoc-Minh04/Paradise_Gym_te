@@ -257,15 +257,15 @@
           title="Chuyển chế độ sáng/tối">
           <span id="theme-icon">dark_mode</span>
         </button>
-        <button
+        <button id="btn-settings"
           class="material-symbols-outlined text-on-surface-variant hover:text-brand-primary p-atom rounded-lg transition-all">settings</button>
         <div class="relative group cursor-pointer flex items-center gap-compact ml-xs pl-standard border-l border-outline-variant" title="Tài khoản Quản trị">
-          <div
-            class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-[#157a2a] flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity">
+          <div id="header-user-avatar"
+            class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-[#157a2a] flex items-center justify-center shadow-sm hover:opacity-90 transition-opacity overflow-hidden">
             <span class="material-symbols-outlined text-white text-base"
               style="font-variation-settings:'FILL' 1">person</span>
           </div>
-          <div class="hidden flex-col leading-none">
+          <div class="flex flex-col leading-none">
             <span class="text-body-sm text-on-surface font-bold" id="header-user-name"></span>
             <span class="text-on-surface-variant" style="font-size:10px" id="header-user-role"></span>
           </div>
@@ -320,6 +320,7 @@
   <script src="assets/js/pages/packages.js"></script>
   <script src="assets/js/pages/birthday.js"></script>
   <script src="assets/js/pages/revenue.js"></script>
+  <script src="assets/js/pages/config.js"></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="assets/js/app.js"></script>
 
@@ -447,28 +448,26 @@
     </div>
   </div>
 
-  <!-- Modal Đổi mật khẩu -->
-  <div id="modal-admin-change-password" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#fff;border-radius:20px;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,0.28);position:relative;overflow:hidden;">
-      <div style="padding:20px 24px;border-bottom:1px solid #e8ede6;">
-        <h3 style="color:#181c20;font-weight:700;font-size:18px;">Đổi mật khẩu</h3>
+  <!-- Modal Cấu hình hệ thống -->
+  <div id="modal-system-config" style="display:none;position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;border-radius:20px;width:100%;max-width:600px;box-shadow:0 24px 60px rgba(0,0,0,0.28);position:relative;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#334155 0%,#475569 100%);padding:20px;text-align:center;">
+        <h3 style="color:#fff;font-weight:700;font-size:18px;">Cài đặt hệ thống</h3>
+        <p style="color:rgba(255,255,255,0.8);font-size:12px;margin-top:4px;">Quản lý thông tin chung và quy định</p>
       </div>
       <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+        
         <div>
-          <label style="font-size:12px;font-weight:700;color:#6e7a6b;margin-bottom:6px;display:block;">Mật khẩu hiện tại</label>
-          <input id="pwd-old" type="password" style="width:100%;border:1px solid #cdd6ca;border-radius:10px;padding:10px 14px;font-size:14px;outline:none;" />
+          <label style="font-size:12px;font-weight:700;color:#6e7a6b;margin-bottom:6px;display:block;">Quy định phòng tập (Hiển thị trên Mobile)</label>
+          <textarea id="config-regulations" rows="10" style="width:100%;border:1px solid #cdd6ca;border-radius:10px;padding:10px 14px;font-size:14px;outline:none;resize:none;line-height:1.6;" placeholder="Nhập các quy định của phòng tập..."></textarea>
+          <p style="color:#6e7a6b;font-size:11px;margin-top:4px;">Gợi ý: Dùng các con số 1, 2, 3... để liệt kê các quy định.</p>
         </div>
-        <div>
-          <label style="font-size:12px;font-weight:700;color:#6e7a6b;margin-bottom:6px;display:block;">Mật khẩu mới</label>
-          <input id="pwd-new" type="password" style="width:100%;border:1px solid #cdd6ca;border-radius:10px;padding:10px 14px;font-size:14px;outline:none;" />
-        </div>
-        <div>
-          <label style="font-size:12px;font-weight:700;color:#6e7a6b;margin-bottom:6px;display:block;">Nhập lại mật khẩu mới</label>
-          <input id="pwd-confirm" type="password" style="width:100%;border:1px solid #cdd6ca;border-radius:10px;padding:10px 14px;font-size:14px;outline:none;" />
-        </div>
+
         <div style="display:flex;gap:12px;margin-top:8px;">
-          <button id="btn-close-password" style="flex:1;padding:12px;border-radius:10px;background:#f0f2f0;color:#3f4a3c;font-weight:700;border:none;cursor:pointer;">Hủy</button>
-          <button id="btn-save-password" style="flex:1;padding:12px;border-radius:10px;background:#ba1a1a;color:#fff;font-weight:700;border:none;cursor:pointer;">Đổi mật khẩu</button>
+          <button id="btn-close-config" style="flex:1;padding:12px;border-radius:10px;background:#f0f2f0;color:#3f4a3c;font-weight:700;border:none;cursor:pointer;">Hủy</button>
+          <button id="btn-save-config" style="flex:1;padding:12px;border-radius:10px;background:#1D9336;color:#fff;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <span class="material-symbols-outlined" style="font-size:18px;">save</span> Lưu cấu hình
+          </button>
         </div>
       </div>
     </div>

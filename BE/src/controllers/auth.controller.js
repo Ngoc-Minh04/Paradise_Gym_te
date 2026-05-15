@@ -200,6 +200,7 @@ export const updateAvatarMe = async (req, res) => {
     ghi_audit_log(req, 'UPDATE', 'ho_so', hoSo.id, { avatar_url: hoSo?.avatar_url }, { avatar_url: result.url }, 'Cập nhật ảnh đại diện cá nhân');
     return success(res, { avatar_url: result.url }, 'Cập nhật ảnh thành công');
   } catch (err) {
+    console.error('Avatar upload error:', err);
     return error(res, `Lỗi upload ảnh: ${err.message}`, 500);
   }
 };

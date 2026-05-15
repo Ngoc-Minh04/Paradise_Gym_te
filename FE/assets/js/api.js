@@ -75,4 +75,5 @@
             return data;
         }
     };
+    window.GymApi = window.GymApp.api;
 })();

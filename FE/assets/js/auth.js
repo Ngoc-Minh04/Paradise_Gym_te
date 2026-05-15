@@ -78,13 +78,15 @@
             if (!this.user) return;
             
             // Update User Name and Role in Header
-            const headerUser = document.querySelector('header .flex.items-center span.font-bold');
-            if (headerUser) headerUser.textContent = this.user.ho_ten || this.user.ten_dang_nhap;
+            const nameEl = document.getElementById('header-user-name');
+            const roleEl = document.getElementById('header-user-role');
+            if (nameEl) nameEl.textContent = this.user.ho_ten || this.user.ten_dang_nhap;
+            if (roleEl) roleEl.textContent = window.GymApp.formatEnumLabel(this.user.vai_tro || 'admin');
 
-            // Update Avatar if exists
-            const headerAvatar = document.querySelector('header .flex.items-center .w-7.h-7, header .flex.items-center .w-10.h-10');
-            if (headerAvatar && window.GymApp.avatarImg) {
-                headerAvatar.innerHTML = window.GymApp.avatarImg(this.user.avatar_url, this.user.ho_ten, 'sm');
+            // Update Avatar
+            const avatarEl = document.getElementById('header-user-avatar');
+            if (avatarEl && window.GymApp.avatarImg) {
+                avatarEl.innerHTML = window.GymApp.avatarImg(this.user.avatar_url, this.user.ho_ten, 'sm');
             }
         },
 

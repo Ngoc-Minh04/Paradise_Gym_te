@@ -7,9 +7,9 @@ import {
 import {
   Award, Badge, Building2, Calendar, ChevronRight,
   CreditCard, Dumbbell, KeyRound, LogOut,
-  Moon, Phone, Star, Sun, User, UserCheck,
+  Moon, Phone, Star, Sun, User, UserCheck, FileText,
 } from 'lucide-react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import ProfileAvatar from '../../components/ProfileAvatar';
 import { useAuthStore } from '../../store/useAuthStore';
 import { api } from '../../services/api';
@@ -112,6 +112,7 @@ const secStyles = StyleSheet.create({
 
 // ── Màn hình chính ─────────────────────────────────────────
 export default function MemberProfileScreen() {
+  const navigation = useNavigation();
   const { user, logout } = useAuthStore();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -307,6 +308,14 @@ export default function MemberProfileScreen() {
                 ios_backgroundColor={G.gray200}
               />
             }
+          />
+          <MenuRow
+            icon={FileText}
+            iconBg="#fff1f2"
+            iconColor="#e11d48"
+            label="Quy định phòng tập"
+            sublabel="Các nội quy & quy định chung"
+            onPress={() => navigation.navigate('Regulations')}
           />
         </Section>
 
