@@ -38,6 +38,7 @@ export const getSchedules = (req, res) => {
     SELECT
       lt.id, lt.ngay_tap, lt.gio_bat_dau, lt.gio_ket_thuc,
       lt.loai_buoi, lt.trang_thai, lt.ghi_chu, lt.ly_do_huy,
+      lt.ghi_chu_tap, lt.ghi_chu_dinh_duong,
       hv.id AS hoi_vien_id, hv.ho_ten AS ten_hoi_vien, hv.avatar_url AS avatar_hoi_vien,
       pt.id AS pt_id, pt.ho_ten AS ten_pt, pt.avatar_url AS avatar_pt,
       (dk.so_buoi_dang_ky - dk.so_buoi_da_tap) AS buoi_con_lai,
@@ -265,4 +266,36 @@ export const updateSchedule = (req, res) => {
   }
 
   return success(res, db.prepare('SELECT * FROM lich_tap WHERE id = ?').get(id), 'Cập nhật lịch thành công');
+};
+
+// ── PUT /api/pt/schedules/:id/notes ──────────────────────
+// Cập nhật ghi chú tập luyện & dinh dưỡng (chỉ dành cho PT/Admin)
+export const updateNotes = (req, res) => {
+  const { id } = req.params;
+  const { ghi_chu_tap, ghi_chu_dinh_duong } = req.body;
+
+  const schedule = db.prepare('SELECT * FROM lich_tap WHERE id = ?').get(id);
+  if (!schedule) return error(res, 'Không tìm thấy lịch tập.', 404);
+
+  // Phân quyền: PT chỉ được sửa lịch của mình
+  if (req.user.vai_tro === 'pt') {
+    const hoSoPt = db.prepare('SELECT id FROM ho_so WHERE tai_khoan_id = ?').get(req.user.id);
+    if (!hoSoPt || schedule.pt_id !== hoSoPt.id) {
+      return error(res, 'Bạn chỉ có thể cập nhật ghi chú cho buổi tập của mình.', 403);
+    }
+  }
+
+  db.prepare(`
+    UPDATE lich_tap SET
+      ghi_chu_tap = ?,
+      ghi_chu_dinh_duong = ?
+    WHERE id = ?
+  `).run(ghi_chu_tap || null, ghi_chu_dinh_duong || null, id);
+
+  ghi_audit_log(req, 'UPDATE', 'lich_tap', parseInt(id), 
+    { ghi_chu_tap: schedule.ghi_chu_tap, ghi_chu_dinh_duong: schedule.ghi_chu_dinh_duong }, 
+    { ghi_chu_tap, ghi_chu_dinh_duong }, 
+    'Cập nhật ghi chú tập luyện & dinh dưỡng');
+
+  return success(res, null, 'Cập nhật ghi chú thành công');
 };

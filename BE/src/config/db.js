@@ -32,6 +32,14 @@ try {
   db.exec(`ALTER TABLE lich_tap ADD COLUMN da_checkin INTEGER NOT NULL DEFAULT 0 CHECK (da_checkin IN (0,1));`);
 } catch (_) { /* cột đã tồn tại — bỏ qua */ }
 
+try {
+  db.exec(`ALTER TABLE lich_tap ADD COLUMN ghi_chu_tap TEXT;`);
+} catch (_) { /* cột đã tồn tại — bỏ qua */ }
+
+try {
+  db.exec(`ALTER TABLE lich_tap ADD COLUMN ghi_chu_dinh_duong TEXT;`);
+} catch (_) { /* cột đã tồn tại — bỏ qua */ }
+
 // Tạo bảng cau_hinh nếu chưa có
 db.exec(`
   CREATE TABLE IF NOT EXISTS cau_hinh (

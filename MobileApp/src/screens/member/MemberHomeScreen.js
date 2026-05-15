@@ -283,7 +283,11 @@ export default function MemberHomeScreen({ navigation }) {
 
               {/* HLV PT (nếu có) */}
               {activePT ? (
-                <View style={styles.ptRow}>
+                <TouchableOpacity 
+                  style={styles.ptRow} 
+                  activeOpacity={0.7}
+                  onPress={() => navigation.navigate('PTSchedule')}
+                >
                   <Dumbbell color={G.primary} size={16} strokeWidth={2} />
                   <Text style={styles.ptRowText}>
                     {activePT.ten_goi_pt ? (
@@ -295,7 +299,7 @@ export default function MemberHomeScreen({ navigation }) {
                     HLV: <Text style={{ fontWeight: '700', color: G.gray900 }}>{activePT.ten_pt}</Text>
                     {'  •  '}Còn <Text style={{ fontWeight: '700', color: G.primary }}>{ptRemaining} buổi</Text>
                   </Text>
-                </View>
+                </TouchableOpacity>
               ) : null}
             </View>
           ) : (
@@ -344,7 +348,7 @@ export default function MemberHomeScreen({ navigation }) {
               icon={Award}
               label={'Buổi PT\ncòn lại'}
               accent="#b7791f"
-              onPress={() => navigation?.navigate?.('Schedule')}
+              onPress={() => navigation?.navigate?.('PTSchedule')}
             />
           </View>
         </View>

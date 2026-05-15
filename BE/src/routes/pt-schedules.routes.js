@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getSchedules, createSchedule, confirmSchedule, cancelSchedule, updateSchedule, revertSchedule } from '../controllers/pt-schedules.controller.js';
+import { getSchedules, createSchedule, confirmSchedule, cancelSchedule, updateSchedule, revertSchedule, updateNotes } from '../controllers/pt-schedules.controller.js';
 import { verifyToken } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/role.js';
 
@@ -12,5 +12,6 @@ router.put('/:id',            requireRole('admin'), updateSchedule);            
 router.put('/:id/confirm',    requireRole('admin', 'le_tan', 'pt'), confirmSchedule);  // Xác nhận đã tập (PT tự xác nhận lịch của mình)
 router.put('/:id/cancel',     requireRole('admin', 'le_tan'), cancelSchedule);        // Hủy lịch
 router.patch('/:id/hoan-tac', requireRole('admin', 'le_tan'), revertSchedule);         // Hoàn tác (chỉ buổi do cron xác nhận)
+router.put('/:id/notes',      requireRole('admin', 'pt'), updateNotes);               // Ghi chú ăn gì, tập gì
 
 export default router;
