@@ -188,7 +188,7 @@ if (!migratedV4) {
                           'hoan_tac_buoi_tap', 'tai_khoan_bi_khoa',
                           'tai_khoan_moi', 'tom_tat_buoi_sang',
                           'het_han_goi_pt_thang', 'cap_nhat_buoi_tap',
-                          'ghi_chu_moi'
+                          'ghi_chu_moi', 'nghi_le'
                       )),
         tieu_de       TEXT NOT NULL,
         noi_dung      TEXT NOT NULL,

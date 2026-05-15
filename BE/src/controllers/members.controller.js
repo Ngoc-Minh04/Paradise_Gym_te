@@ -646,7 +646,8 @@ export const getMyNotifications = (req, res) => {
     'ghi_chu_moi': { icon: 'description', muc_do: 'success' },
     'cap_nhat_buoi_tap': { icon: 'event_repeat', muc_do: 'warning' },
     'huy_buoi_tap': { icon: 'event_busy', muc_do: 'danger' },
-    'tai_khoan_moi': { icon: 'lock_open', muc_do: 'info' }
+    'tai_khoan_moi': { icon: 'lock_open', muc_do: 'info' },
+    'nghi_le': { icon: 'celebration', muc_do: 'warning' }
   };
 
   staticNotis.forEach(n => {

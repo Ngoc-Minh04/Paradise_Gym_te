@@ -7,11 +7,50 @@
 import cron from 'node-cron';
 import db from '../config/db.js';
 import { createNotification } from '../utils/notifications.js';
+import { HOLIDAYS } from '../config/holidays.config.js';
+
+/**
+ * Kiểm tra và thông báo nghỉ lễ
+ */
+function checkAndNotifyHolidays() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tDay = tomorrow.getDate();
+  const tMonth = tomorrow.getMonth() + 1;
+
+  const holiday = HOLIDAYS.find(h => h.day === tDay && h.month === tMonth);
+
+  if (holiday) {
+    console.log(`[CRON-HOLIDAY] Phát hiện ngày lễ sắp tới: ${holiday.name}. Đang gửi thông báo...`);
+
+    // Lấy danh sách ID của tất cả hội viên và PT (không bị xóa)
+    const targets = db.prepare(`
+      SELECT id, ho_ten, loai_ho_so FROM ho_so 
+      WHERE is_deleted = 0 AND loai_ho_so IN ('hoi_vien', 'pt')
+    `).all();
+
+    for (const person of targets) {
+      createNotification(
+        'nghi_le',
+        `Thông báo nghỉ lễ: ${holiday.name}`,
+        `Chào ${person.ho_ten}, Paradise Gym xin thông báo phòng tập sẽ nghỉ lễ ${holiday.name} vào ngày mai (${tDay}/${tMonth}). Chúc bạn một kỳ nghỉ vui vẻ!`,
+        null,
+        'he_thong',
+        person.loai_ho_so,
+        person.id
+      );
+    }
+    console.log(`[CRON-HOLIDAY] Đã gửi thông báo nghỉ lễ cho ${targets.length} người.`);
+  }
+}
 
 // ── Cron 08:00 sáng mỗi ngày ─────────────────────────────
 function runDailyJob() {
   const today = new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD
   console.log(`[CRON-DAILY] ${new Date().toLocaleTimeString('vi-VN')} — Đang chạy job thông báo hàng ngày...`);
+
+  // Kiểm tra nghỉ lễ
+  checkAndNotifyHolidays();
 
   // 1. Sắp hết hạn gói tập (còn 1–7 ngày)
   const sapHetHan = db.prepare(`
