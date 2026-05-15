@@ -217,12 +217,6 @@ export default function MemberHomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* ── Cảnh báo quan trọng (nếu có) ─────────────────── */}
-        {!loading && urgentAlerts.length > 0 && (
-          <View style={styles.alertSection}>
-            {urgentAlerts.map((n, i) => <AlertBanner key={i} item={n} />)}
-          </View>
-        )}
 
         {/* ────────────────────────────────────── */}
         {/* CARD HỢP ĐỒNG / GÓI TẬP ĐANG HOẠT ĐỘNG */}

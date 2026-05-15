@@ -1,4 +1,13 @@
 import db from '../config/db.js';
+import { HOLIDAYS } from '../config/holidays.config.js';
+
+export const getHolidays = (req, res) => {
+  try {
+    res.json({ success: true, data: HOLIDAYS });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 export const getConfig = (req, res) => {
   try {

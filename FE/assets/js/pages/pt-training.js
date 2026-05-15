@@ -137,9 +137,19 @@ window.GymApp.pages['pt-training'] = {
                 <input id="edit-schedule-end" type="time" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md transition-colors" />
               </div>
             </div>
+            <div class="grid grid-cols-2 gap-standard">
+              <div>
+                <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">🏋️ Tập gì hôm nay?</label>
+                <textarea id="edit-schedule-note-tap" rows="2" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md resize-none transition-colors" placeholder="VD: Chest Day, Squat..."></textarea>
+              </div>
+              <div>
+                <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">🍎 Dinh dưỡng học viên</label>
+                <textarea id="edit-schedule-note-dinh-duong" rows="2" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md resize-none transition-colors" placeholder="VD: Ăn nhiều đạm, giảm tinh bột..."></textarea>
+              </div>
+            </div>
             <div>
-              <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">Ghi chú</label>
-              <textarea id="edit-schedule-note" rows="2" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md resize-none transition-colors"></textarea>
+              <label class="block text-body-sm text-on-surface-variant font-bold mb-xs">Ghi chú chung (Admin)</label>
+              <textarea id="edit-schedule-note" rows="1" class="w-full bg-surface-container-low border border-outline-variant text-on-surface px-standard py-compact rounded-xl focus:border-brand-primary outline-none font-body-md text-body-md resize-none transition-colors"></textarea>
             </div>
           </div>
           <div class="flex gap-standard justify-end pt-xs border-t border-outline-variant">
@@ -208,15 +218,29 @@ window.GymApp.pages['pt-training'] = {
 
           <div class="flex items-center gap-standard">
             <span class="bg-surface-container px-compact py-xs rounded-full text-body-sm text-on-surface-variant font-bold">${window.GymApp.formatEnumLabel(s.loai_buoi || s.type || 'ca_nhan')}</span>
-            ${s.ghi_chu || s.notes ? `<span class="text-on-surface-variant text-body-sm truncate">${s.ghi_chu || s.notes}</span>` : ''}
+            ${s.ghi_chu ? `<span class="text-on-surface-variant text-body-sm truncate" title="${s.ghi_chu}">📝 ${s.ghi_chu}</span>` : ''}
           </div>
+
+          <!-- Nhật ký luyện tập -->
+          ${(s.ghi_chu_tap || s.ghi_chu_dinh_duong) ? `
+            <div class="mt-xs pt-xs border-t border-dashed border-outline-variant flex flex-col gap-xs">
+              ${s.ghi_chu_tap ? `<div class="flex items-center gap-xs text-body-xs text-on-surface"><span class="text-brand-primary font-bold">🏋️ Tập:</span> <span class="truncate">${s.ghi_chu_tap}</span></div>` : ''}
+              ${s.ghi_chu_dinh_duong ? `<div class="flex items-center gap-xs text-body-xs text-on-surface"><span class="text-[#0284c7] font-bold">🍎 Ăn:</span> <span class="truncate">${s.ghi_chu_dinh_duong}</span></div>` : ''}
+            </div>
+          ` : ''}
         </div>
 
         <!-- Card footer -->
         <div class="px-loose py-compact border-t border-outline-variant flex items-center justify-end gap-atom bg-surface-container-low">
           ${s.trang_thai === 'cho_tap' ? `
             <button class="btn-edit-schedule material-symbols-outlined text-outline hover:text-brand-primary text-xl p-atom rounded-lg hover:bg-surface-container transition-colors"
-              data-id="${s.id}" data-ngay="${s.ngay_tap || ''}" data-start="${s.gio_bat_dau || ''}" data-end="${s.gio_ket_thuc || ''}" data-ghi-chu="${(s.ghi_chu || '').replace(/"/g, '&quot;')}"
+              data-id="${s.id}" 
+              data-ngay="${s.ngay_tap || ''}" 
+              data-start="${s.gio_bat_dau || ''}" 
+              data-end="${s.gio_ket_thuc || ''}" 
+              data-ghi-chu="${(s.ghi_chu || '').replace(/"/g, '&quot;')}"
+              data-ghi-chu-tap="${(s.ghi_chu_tap || '').replace(/"/g, '&quot;')}"
+              data-ghi-chu-dinh-duong="${(s.ghi_chu_dinh_duong || '').replace(/"/g, '&quot;')}"
               title="Sửa lịch">edit</button>
             <button class="btn-cancel-schedule material-symbols-outlined text-outline hover:text-error text-xl p-atom rounded-lg hover:bg-error-container transition-colors"
               data-id="${s.id}" title="Hủy lịch">event_busy</button>
@@ -301,6 +325,8 @@ window.GymApp.pages['pt-training'] = {
       document.getElementById('edit-schedule-start').value = btn.dataset.start || '';
       document.getElementById('edit-schedule-end').value = btn.dataset.end || '';
       document.getElementById('edit-schedule-note').value = btn.dataset.ghiChu || '';
+      document.getElementById('edit-schedule-note-tap').value = btn.dataset.ghiChuTap || '';
+      document.getElementById('edit-schedule-note-dinh-duong').value = btn.dataset.ghiChuDinhDuong || '';
       document.getElementById('modal-edit-schedule').classList.remove('hidden');
     });
 
@@ -349,6 +375,8 @@ window.GymApp.pages['pt-training'] = {
       const gio_bat_dau = document.getElementById('edit-schedule-start').value;
       const gio_ket_thuc = document.getElementById('edit-schedule-end').value;
       const ghi_chu = document.getElementById('edit-schedule-note').value;
+      const ghi_chu_tap = document.getElementById('edit-schedule-note-tap').value;
+      const ghi_chu_dinh_duong = document.getElementById('edit-schedule-note-dinh-duong').value;
 
       if (!ngay_tap || !gio_bat_dau || !gio_ket_thuc) {
         window.GymApp.toast('Vui lòng điền đầy đủ ngày và giờ!', 'error');
@@ -362,7 +390,9 @@ window.GymApp.pages['pt-training'] = {
       this.disabled = true;
       this.textContent = 'Đang lưu...';
       try {
-        const res = await window.GymApp.api.put(`/pt/schedules/${id}`, { ngay_tap, gio_bat_dau, gio_ket_thuc, ghi_chu });
+        const res = await window.GymApp.api.put(`/pt/schedules/${id}`, { 
+          ngay_tap, gio_bat_dau, gio_ket_thuc, ghi_chu, ghi_chu_tap, ghi_chu_dinh_duong 
+        });
         if (res?.success) {
           window.GymApp.toast('Cập nhật lịch tập thành công!', 'success');
           document.getElementById('modal-edit-schedule').classList.add('hidden');
@@ -373,6 +403,8 @@ window.GymApp.pages['pt-training'] = {
             window.GymApp.data.ptSchedules[idx].gio_bat_dau = gio_bat_dau;
             window.GymApp.data.ptSchedules[idx].gio_ket_thuc = gio_ket_thuc;
             window.GymApp.data.ptSchedules[idx].ghi_chu = ghi_chu;
+            window.GymApp.data.ptSchedules[idx].ghi_chu_tap = ghi_chu_tap;
+            window.GymApp.data.ptSchedules[idx].ghi_chu_dinh_duong = ghi_chu_dinh_duong;
           }
           self._applyFilter();
         } else {

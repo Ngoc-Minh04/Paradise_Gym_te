@@ -1,9 +1,11 @@
 import express from 'express';
-import { getConfig, updateConfig } from '../controllers/config.controller.js';
+import { getConfig, updateConfig, getHolidays } from '../controllers/config.controller.js';
 import { verifyToken } from '../middlewares/auth.js';
 import { requireRole } from '../middlewares/role.js';
 
 const router = express.Router();
+
+router.get('/holidays/list', getHolidays);
 
 // Public hoặc Member/PT đều có thể xem quy định
 router.get('/:key', getConfig);

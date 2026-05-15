@@ -146,6 +146,7 @@ window.GymApp.pages['dashboard'] = {
             </div>
           </div>
 
+
           <!-- Tình trạng hội viên -->
           <div class="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl border border-outline-variant shadow-sm overflow-hidden transition-all hover:shadow-lg">
             <div class="section-header px-loose py-standard border-b border-outline-variant flex items-center justify-between bg-surface-container-lowest/40">
@@ -248,12 +249,14 @@ window.GymApp.pages['dashboard'] = {
 
   _fetchAndRender: async function () {
     try {
-      const [statsRes, revRes] = await Promise.all([
+      const [statsRes, revRes, holidayRes] = await Promise.all([
         window.GymApp.api.get('/revenue/dashboard'),
         window.GymApp.api.get('/revenue?days=365'),
+        window.GymApp.api.get('/config/holidays/list'),
       ]);
       if (statsRes && statsRes.success) window.GymApp.data.stats = statsRes.data;
       if (revRes && revRes.success) window.GymApp.data.revenueDaily = revRes.data.daily || [];
+      if (holidayRes && holidayRes.success) window.GymApp.data.holidays = holidayRes.data;
     } catch (err) {
       console.error('Failed to fetch dashboard stats', err);
     }

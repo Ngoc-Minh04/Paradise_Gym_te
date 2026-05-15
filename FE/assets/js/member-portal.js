@@ -342,17 +342,76 @@
     const day = s.ngay_tap ? new Date(s.ngay_tap) : null;
     const weekday = day ? day.toLocaleDateString('vi-VN', { weekday: 'short' }) : '—';
     const date = day ? day.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : '—';
+    const isDone = s.trang_thai === 'da_tap';
+    const isCancel = s.trang_thai === 'da_huy';
+
     return `
-      <div class="p-s5 flex items-center gap-s4 hover:bg-surface-container transition-colors">
-        <div class="bg-surface-container-low w-14 h-14 rounded-lg flex flex-col items-center justify-center shrink-0">
-          <span class="font-bold text-brand-primary">${weekday}</span>
-          <span class="text-label-sm text-on-surface-variant">${date}</span>
+      <div class="relative pl-s8 pb-s8 group">
+        <!-- Đường line dọc -->
+        <div class="absolute left-[19px] top-0 bottom-0 w-0.5 bg-outline-variant group-last:bottom-full group-last:h-5"></div>
+        
+        <!-- Điểm mốc trên timeline -->
+        <div class="absolute left-0 top-0 w-10 h-10 rounded-full border-4 border-surface-container-lowest flex items-center justify-center z-10 
+          ${isDone ? 'bg-brand-primary' : isCancel ? 'bg-error' : 'bg-surface-container-high border-brand-primary/30'}">
+          <span class="material-symbols-outlined text-[18px] text-white">
+            ${isDone ? 'check' : isCancel ? 'close' : 'event'}
+          </span>
         </div>
-        <div class="flex-1 min-w-0">
-          <p class="font-bold text-on-surface text-label-md truncate">${s.ten_pt ? `Tập cùng ${s.ten_pt}` : 'Lịch tập PT'}</p>
-          <p class="text-label-sm text-on-surface-variant">${window.GymApp.formatTime(s.gio_bat_dau)} - ${window.GymApp.formatTime(s.gio_ket_thuc)} | ${window.GymApp.formatEnumLabel(s.loai_buoi || 'ca_nhan')}</p>
+
+        <div class="member-card p-s5 hover:shadow-md transition-shadow relative overflow-hidden">
+          ${isDone ? '<div class="absolute top-0 right-0 w-24 h-24 bg-brand-primary/5 rounded-full -mr-12 -mt-12"></div>' : ''}
+          
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-s3 mb-s4">
+            <div class="flex items-center gap-s3">
+              <div class="text-center min-w-[50px] bg-surface-container-low px-s2 py-s1 rounded-lg">
+                <p class="text-label-sm font-bold text-brand-primary uppercase">${weekday}</p>
+                <p class="text-headline-sm font-bold text-on-surface">${date}</p>
+              </div>
+              <div>
+                <p class="font-bold text-on-surface text-body-lg">${s.ten_pt ? `Huấn luyện cùng ${s.ten_pt}` : 'Buổi tập huấn luyện cá nhân'}</p>
+                <p class="text-body-sm text-on-surface-variant flex items-center gap-s1">
+                  <span class="material-symbols-outlined text-[16px]">schedule</span>
+                  ${window.GymApp.formatTime(s.gio_bat_dau)} - ${window.GymApp.formatTime(s.gio_ket_thuc)}
+                  <span class="mx-s1 opacity-30">|</span>
+                  ${window.GymApp.formatEnumLabel(s.loai_buoi || 'ca_nhan')}
+                </p>
+              </div>
+            </div>
+            <div>
+              ${window.GymApp.statusBadge(s.trang_thai)}
+            </div>
+          </div>
+
+          <!-- Lộ trình ghi chú từ PT -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-s4 mt-s2">
+            <div class="bg-surface-container-low/50 p-s4 rounded-xl border border-outline-variant/50">
+              <div class="flex items-center gap-s2 mb-s2">
+                <span class="material-symbols-outlined text-brand-primary text-[18px]">fitness_center</span>
+                <span class="text-label-md font-bold text-on-surface">Kế hoạch tập luyện</span>
+              </div>
+              <p class="text-body-md ${s.ghi_chu_tap ? 'text-on-surface' : 'text-on-surface-variant italic'}">
+                ${s.ghi_chu_tap || 'PT đang chuẩn bị bài tập cho bạn...'}
+              </p>
+            </div>
+            
+            <div class="bg-surface-container-low/50 p-s4 rounded-xl border border-outline-variant/50">
+              <div class="flex items-center gap-s2 mb-s2">
+                <span class="material-symbols-outlined text-[#0284c7] text-[18px]">restaurant</span>
+                <span class="text-label-md font-bold text-on-surface">Dinh dưỡng đề xuất</span>
+              </div>
+              <p class="text-body-md ${s.ghi_chu_dinh_duong ? 'text-on-surface' : 'text-on-surface-variant italic'}">
+                ${s.ghi_chu_dinh_duong || 'Đang chờ cập nhật thực đơn...'}
+              </p>
+            </div>
+          </div>
+
+          ${s.ghi_chu ? `
+            <div class="mt-s4 pt-s3 border-t border-outline-variant flex items-start gap-s2">
+              <span class="material-symbols-outlined text-on-surface-variant text-[16px] mt-0.5">sticky_note_2</span>
+              <p class="text-body-sm text-on-surface-variant"><span class="font-bold">Lưu ý chung:</span> ${s.ghi_chu}</p>
+            </div>
+          ` : ''}
         </div>
-        ${window.GymApp.statusBadge(s.trang_thai)}
       </div>
     `;
   }
@@ -374,7 +433,6 @@
 
       return `
         <div class="space-y-s6">
-          ${renderNotificationBanners()}
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-s6">
             <section class="lg:col-span-2 relative overflow-hidden rounded-xl bg-primary-container text-white p-s6 min-h-[240px] flex flex-col justify-between">
               <div class="absolute inset-0 opacity-15 pointer-events-none" style="background:radial-gradient(circle at 20% 20%,#ffffff 0,transparent 28%),linear-gradient(135deg,#004d2a,#0c6c40 60%,#84d8a2)"></div>
@@ -535,27 +593,42 @@
       return `
         <div class="space-y-s6">
           <div>
-            <h2 class="text-headline-md font-bold text-on-surface">Lịch tập của tôi</h2>
-            <p class="text-on-surface-variant text-body-md mt-s1">Toàn bộ lịch tập đã đặt trong hệ thống</p>
+            <h2 class="text-headline-md font-bold text-on-surface">Lộ trình tập PT của tôi</h2>
+            <p class="text-on-surface-variant text-body-md mt-s1">Theo dõi chi tiết bài tập và dinh dưỡng từ huấn luyện viên</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-s4">
+            <div class="member-card p-s4 flex items-center gap-s4">
+              <div class="w-12 h-12 rounded-xl bg-brand-primary/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-brand-primary">checklist</span>
+              </div>
+              <div>
+                <p class="text-label-sm text-on-surface-variant uppercase font-bold">Tổng số buổi</p>
+                <p class="text-headline-sm font-bold text-on-surface">${schedules.length} buổi</p>
+              </div>
+            </div>
+            <div class="member-card p-s4 flex items-center gap-s4">
+              <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-green-600">check_circle</span>
+              </div>
+              <div>
+                <p class="text-label-sm text-on-surface-variant uppercase font-bold">Đã hoàn thành</p>
+                <p class="text-headline-sm font-bold text-on-surface">${schedules.filter(s => s.trang_thai === 'da_tap').length} buổi</p>
+              </div>
+            </div>
+            <div class="member-card p-s4 flex items-center gap-s4">
+              <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <span class="material-symbols-outlined text-blue-600">pending_actions</span>
+              </div>
+              <div>
+                <p class="text-label-sm text-on-surface-variant uppercase font-bold">Buổi chờ tập</p>
+                <p class="text-headline-sm font-bold text-on-surface">${schedules.filter(s => s.trang_thai === 'cho_tap').length} buổi</p>
+              </div>
+            </div>
           </div>
 
           <div class="member-card p-s4">
             <div class="flex flex-wrap gap-s4 items-center">
-              <select id="ms-status" class="bg-surface-container-low border border-outline-variant text-on-surface px-s4 py-s3 rounded-xl focus:border-brand-primary outline-none text-body-md flex-1 min-w-[160px]">
-                <option value="">Tất cả trạng thái</option>
-                <option value="cho_tap">Chờ tập</option>
-                <option value="da_tap">Đã tập</option>
-                <option value="da_huy">Đã hủy</option>
-                <option value="vang">Vắng</option>
-              </select>
-              <input id="ms-date" type="date" class="bg-surface-container-low border border-outline-variant text-on-surface px-s4 py-s3 rounded-xl focus:border-brand-primary outline-none text-body-md flex-1 min-w-[160px]" />
-              <button id="ms-reload" class="flex items-center gap-s2 px-s5 py-s3 rounded-full border border-outline-variant text-on-surface-variant hover:text-brand-primary hover:border-brand-primary transition-all font-bold text-label-md">
-                <span class="material-symbols-outlined text-sm">refresh</span>Tải lại
-              </button>
-            </div>
-          </div>
-
-          <section class="member-card overflow-hidden">
             <div id="ms-list" class="divide-y divide-outline-variant">
               ${this._renderList(schedules)}
             </div>
