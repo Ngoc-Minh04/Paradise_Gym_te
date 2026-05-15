@@ -176,7 +176,9 @@ export default function MemberPTScheduleScreen() {
                       <View style={styles.noteSection}>
                         {item.ghi_chu_tap && (
                           <View style={styles.noteItem}>
-                            <Dumbbell color={G.primary} size={12} strokeWidth={2.5} />
+                            <View style={styles.noteIcon}>
+                              <Dumbbell color={G.primary} size={12} strokeWidth={2.5} />
+                            </View>
                             <Text style={styles.noteText} numberOfLines={2}>
                               Tập gì: <Text style={{fontWeight:'700'}}>{item.ghi_chu_tap}</Text>
                             </Text>
@@ -184,7 +186,9 @@ export default function MemberPTScheduleScreen() {
                         )}
                         {item.ghi_chu_dinh_duong && (
                           <View style={[styles.noteItem, { marginTop: 4 }]}>
-                            <Info color="#0284c7" size={12} strokeWidth={2.5} />
+                            <View style={styles.noteIcon}>
+                              <Info color="#0284c7" size={12} strokeWidth={2.5} />
+                            </View>
                             <Text style={styles.noteText} numberOfLines={2}>
                               Ăn gì: <Text style={{fontWeight:'700'}}>{item.ghi_chu_dinh_duong}</Text>
                             </Text>
@@ -289,8 +293,11 @@ const styles = StyleSheet.create({
   },
   noteItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 6,
+  },
+  noteIcon: {
+    marginTop: 2, // Cân bằng với dòng chữ đầu tiên
   },
   noteText: {
     fontSize: 11,
